@@ -1,0 +1,3 @@
+server:
+    port: 5000 # If you are changing this, don't forget to change at docker-compose too!
+    debug: True

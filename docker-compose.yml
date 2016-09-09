@@ -1,0 +1,13 @@
+web:
+  build: .
+  command: python -u app.py
+  ports:
+    - "5000:5000"
+  volumes:
+    - ./dota2league-tracker:/dota2league-tracker
+  links:
+    - db
+  restart: always
+db:
+  image: mongo
+  restart: always
