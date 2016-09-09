@@ -1,6 +1,7 @@
 from flask import Flask, abort, request
 from config import parse
 from bson.json_util import dumps
+from inspect import getargspec
 
 config = parse('config.yml')
 
@@ -22,7 +23,7 @@ class Dummy:
         return "Object containing " + str(self._data)
     def method1(self):
         return "Yay, it's method1!"
-    def method2(self, param):
+    def method2(self, param, something_else = 'not mandatory'):
         return "Yay, it's method2 with param value of " + str(param)
 
 o = Dummy('Sikret data')
@@ -41,10 +42,37 @@ def expose_as_api(info, path):
     def get_object_action(action):
         try:
             getter = getattr(o, action) #TODO what if it's not a GET action?
-            args = {_:request.args.get(_) for _ in request.args} # '?value=a&value=b'? No way!
-            return dumps(getter(**args))
         except AttributeError:
             abort(404)
+        args = {_:request.args.get(_) for _ in request.args} # '?value=a&value=b'? No way!
+        try:
+            result = getter(**args)
+        except TypeError:
+            signature = getargspec(getter)
+            known_params = signature.args[1:] # this removes 'self' - or how it is called - from the list. TODO: handle classmethods too
+            mandatory_params = known_params[:-len(signature.defaults)] if signature.defaults else known_params
+            known_params, mandatory_params = set(known_params), set(mandatory_params)
+
+            errors = []
+            query_params = set(args.keys())
+
+            unknown_params = query_params - known_params
+            if 1 == len(unknown_params):
+                errors.append('Unknown param: ' + next(iter(unknown_params)) + '.')
+            elif 1 < len(unknown_params):
+                errors.append('Unknown params: ' + ', '.join(str(param) for param in unknown_params) + '.')
+
+            unsatisfied_params = mandatory_params - query_params
+            if 1 == len(unsatisfied_params):
+                errors.append('Mandatory param not provided: ' + next(iter(unsatisfied_params)) + '.')
+            elif 1 < len(unsatisfied_params):
+                errors.append('Mandatory params not provided: ' + ', '.join(str(param) for param in unsatisfied_params) + '.')
+
+            if errors:
+                result = {'error': ' '.join(errors)}
+            else:
+                raise
+        return dumps(result)
 
 expose_as_api(Dummy('sikret data'), '/object')
 
