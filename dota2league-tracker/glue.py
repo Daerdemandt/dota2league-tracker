@@ -19,18 +19,18 @@ class MongoCRUD:
         # return contents, on fail - error
         pass
     
-
+# TODO: consider using blueprints for that
 def expose_as_api(app, info, path):
     if not path.endswith('/'):
         path = path + '/'
     if not path.startswith('/'):
         path = '/' + path
 
-    @app.route(path)
+    @app.route(path, endpoint = path)
     def get_string_repr():
         return dumps({'info':str(info)})
 
-    @app.route(path + '<action>/')
+    @app.route(path + '<action>/', endpoint = path + 'actions')
     def get_object_action(action):
         status = 200
         try:
