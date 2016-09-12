@@ -1,4 +1,22 @@
 
+class MongoCRUD:
+    def __init__(self, db, name, validate):
+        self._db, self.name, self.validate = db, name, validate
+
+    def create(self, data):
+        # Validate data. If it's ok - create new, else ValueError
+        pass
+    def read(self, id):
+        # return, if not exists - ??? 
+        pass
+    def update(self, id, update):
+        # Read up on Mongo updates
+        pass
+    def delete(self, id):
+        # return contents, on fail - error
+        pass
+    
+
 def expose_as_api(app, info, path):
     if not path.endswith('/'):
         path = path + '/'
