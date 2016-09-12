@@ -1,3 +1,6 @@
+from flask import abort, request
+from inspect import getargspec
+from bson.json_util import dumps
 
 class MongoCRUD:
     def __init__(self, db, name, validate):
@@ -29,10 +32,12 @@ def expose_as_api(app, info, path):
 
     @app.route(path + '<action>/')
     def get_object_action(action):
+        status = 200
         try:
-            getter = getattr(o, action) #TODO what if it's not a GET action?
+            getter = getattr(info, action) #TODO what if it's not a GET action?
         except AttributeError:
-            abort(404)
+            status = 404
+            return dumps({'error' : action + ' is not found'}), status
         args = {_:request.args.get(_) for _ in request.args} # '?value=a&value=b'? No way!
         try:
             result = getter(**args)
@@ -59,8 +64,21 @@ def expose_as_api(app, info, path):
 
             if errors:
                 result = {'error': ' '.join(errors)}
+                status = 422
             else:
                 raise
-        return dumps(result)
+        except KeyError as e:
+            result = {'error': 'Not found: ' + str(e)}
+            status = 404
+        except ValueError as e:
+            result = {'error' : 'Something is wrong: ' + str(e)}
+            status = 422
+        except NotImplementedError as e:
+            result = {'error' : 'Not implemented: ' + str(e)}
+            status = 501
+        except Exception as e:
+            result = {'error' : 'Unexpected error: ' + str(e)}
+            status = 500
+        return dumps(result), status
 
 

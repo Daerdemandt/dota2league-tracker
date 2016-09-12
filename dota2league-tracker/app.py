@@ -1,7 +1,5 @@
-from flask import Flask, abort, request
+from flask import Flask
 from config import parse
-from bson.json_util import dumps
-from inspect import getargspec
 from glue import expose_as_api
 
 config = parse('config.yml')
@@ -26,8 +24,14 @@ class Dummy:
         return "Yay, it's method1!"
     def method2(self, param, something_else = 'not mandatory'):
         return "Yay, it's method2 with param value of " + str(param)
+    def error(self, error):
+        errors = {
+            'key' : KeyError('keeeeey'),
+            'value' : ValueError('bad food'),
+            'ni' : NotImplementedError('totally')
+        }
+        raise errors[error]
 
-o = Dummy('Sikret data')
 expose_as_api(app, Dummy('sikret data'), '/object')
 
 @app.route('/obj/')
