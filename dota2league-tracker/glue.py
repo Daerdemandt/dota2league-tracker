@@ -43,9 +43,14 @@ class MongoCRUD:
         # Read up on Mongo updates
         pass
     def delete(self, id):
-        # return contents, on fail - error
-        pass
-    
+        result = self._collection.delete_one({'_id' : ObjectId(id)}).deleted_count
+        if 0 == result:
+            raise KeyError('Found no element with id `{}`'.format(id))
+        elif 1 == result:
+            return id
+        else:
+            raise RuntimeError('`delete_one` reports to have deleted `{}` elements, not 0 or 1'.format(result))
+
 # TODO: consider using blueprints for that
 def expose_as_api(app, info, path):
     if not path.endswith('/'):
