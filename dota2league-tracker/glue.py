@@ -50,11 +50,12 @@ def expose_as_api(app, info, path):
             errors = []
             query_params = set(args.keys())
 
-            unknown_params = query_params - known_params
-            if 1 == len(unknown_params):
-                errors.append('Unknown param: ' + next(iter(unknown_params)) + '.')
-            elif 1 < len(unknown_params):
-                errors.append('Unknown params: ' + ', '.join(str(param) for param in unknown_params) + '.')
+            if not (signature.varargs or signature.keywords):
+                unknown_params = query_params - known_params
+                if 1 == len(unknown_params):
+                    errors.append('Unknown param: ' + next(iter(unknown_params)) + '.')
+                elif 1 < len(unknown_params):
+                    errors.append('Unknown params: ' + ', '.join(str(param) for param in unknown_params) + '.')
 
             unsatisfied_params = mandatory_params - query_params
             if 1 == len(unsatisfied_params):
