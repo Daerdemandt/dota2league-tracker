@@ -51,6 +51,11 @@ class MongoCRUD:
         else:
             raise RuntimeError('`delete_one` reports to have deleted `{}` elements, not 0 or 1'.format(result))
 
+    def list(self, **kwargs):
+        query = kwargs if kwargs else None
+        result = self._collection.find(query)
+        return list(result)
+
 # TODO: consider using blueprints for that
 def expose_as_api(app, info, path):
     if not path.endswith('/'):
