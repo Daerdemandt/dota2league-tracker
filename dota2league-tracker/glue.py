@@ -1,14 +1,19 @@
 from flask import abort, request
 from inspect import getargspec
 from bson.json_util import dumps
+from good import Invalid
 
 class MongoCRUD:
     def __init__(self, db, name, validate):
         self._db, self.name, self.validate = db, name, validate
 
-    def create(self, data):
-        # Validate data. If it's ok - create new, else ValueError
-        pass
+    def create(self, **kwargs):
+        try:
+            data = self.validate(kwargs)
+        except Invalid as e:
+            raise ValueError(str(e))
+        return self._db[self.name].insert_one(data).inserted_id
+
     def read(self, id):
         # return, if not exists - ??? 
         pass
