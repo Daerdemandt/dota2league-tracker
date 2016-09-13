@@ -1,9 +1,12 @@
 from flask import Flask
 from config import parse
 from glue import expose_as_api
+from leagues import Leagues
+import os
+from pymongo import MongoClient, version
 
 config = parse('config.yml')
-
+mongo = MongoClient(os.environ['DB_PORT_27017_TCP_ADDR'], 27017).dota2league_tracker
 app = Flask(__name__)
 
 #TODO: add more depth here
@@ -15,24 +18,7 @@ def get_health():
 def get_config():
     return dumps(config)
 
-class Dummy:
-    def __init__(self, data):
-        self._data = data
-    def __str__(self):
-        return "Object containing " + str(self._data)
-    def method1(self):
-        return "Yay, it's method1!"
-    def method2(self, param, something_else = 'not mandatory'):
-        return "Yay, it's method2 with param value of " + str(param)
-    def error(self, error):
-        errors = {
-            'key' : KeyError('keeeeey'),
-            'value' : ValueError('bad food'),
-            'ni' : NotImplementedError('totally')
-        }
-        raise errors[error]
-
-expose_as_api(app, Dummy('sikret data'), '/object')
+expose_as_api(app, Leagues(mongo), '/leagues')
 
 @app.route('/obj/')
 def get():
