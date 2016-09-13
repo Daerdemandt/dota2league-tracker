@@ -1,22 +1,44 @@
 from flask import abort, request
 from inspect import getargspec
 from bson.json_util import dumps
+from bson.objectid import ObjectId
 from good import Invalid
+
+def lexic_join(expressions):
+    *most, last = expressions
+    if most:
+        return ', '.join(str(e) for e in most) + ' and ' + str(last)
+    else:
+        return str(last)
 
 class MongoCRUD:
     def __init__(self, db, name, validate):
-        self._db, self.name, self.validate = db, name, validate
+        self._collection = db[name]
+        self.name, self.validate = name, validate
 
     def create(self, **kwargs):
         try:
             data = self.validate(kwargs)
         except Invalid as e:
             raise ValueError(str(e))
-        return self._db[self.name].insert_one(data).inserted_id
+        return self._collection.insert_one(data).inserted_id
 
-    def read(self, id):
-        # return, if not exists - ??? 
-        pass
+    def read(self, id = None, **kwargs):
+        # TODO: use kwargs only and validate them
+        if id == None and not kwargs:
+            return ValueError('Object to be read must be identified')
+        query = kwargs if kwargs else {}
+        if (id):
+            query['_id'] = ObjectId(id)
+        result = self._collection.find_one(query)
+        if None == result:
+            if (id):
+                del query['_id']
+                query['id'] = id
+            message = 'Found no elemens with' + lexic_join(map(lambda x:'`{}`:`{}`'.format(*x), query.items()))
+            raise KeyError(message)
+        return result
+
     def update(self, id, update):
         # Read up on Mongo updates
         pass
