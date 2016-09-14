@@ -107,6 +107,7 @@ def expose_as_api(app, info, path):
         except AttributeError:
             status = 404
             return dumps({'error' : action + ' is not found'}), status
+        #TODO: support dicts in input query as php does
         args = {_:request.args.get(_) for _ in request.args} # '?value=a&value=b'? No way!
         try:
             result = getter(**args)

@@ -6,6 +6,13 @@ league_validator = Schema({
     'is_tracked' : Coerce(bool)
 })
 
-class Leagues(MongoCRUD):
+class Leagues():
     def __init__(self, db):
-        super().__init__(db, 'leagues', league_validator)
+        self.db = MongoCRUD(db, 'leagues', league_validator)
+    def track(self, steam_id):
+        raise NotImplementedError
+    def untrack(self, steam_id):
+        raise NotImplementedError
+    def list(self, tracked = None):
+        raise NotImplementedError
+
