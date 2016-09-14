@@ -40,8 +40,35 @@ class MongoCRUD:
         return result
 
     def update(self, id, update):
-        # Read up on Mongo updates
-        pass
+        # TODO: support validating the update, not post-update entity
+        update_validation_supported = False
+        if not update_validation_supported: # We'll have to update document in Python and validate the result.
+            data = self.read(id)
+            def recursive_update(data, update):
+                try:
+                    for key, value in update.items():
+                        if key in data:
+                            data[key] = recursive_update(data[key], update[key])
+                        else:
+                            data[key] = update[key]
+                    return data
+                except AttributeError: # update is not a dict. Or maybe something else?
+                    return update
+                except TypeError: # update is a dict but data is not
+                    return update
+            recursive_update(data, update)
+            del data['_id']
+
+            try:
+                new_data = self.validate(data)
+            except Invalid as e:
+                raise ValueError(str(e))
+
+            query = {'_id' : ObjectId(id)}
+            # Note: by the time we actually write something, original data could have already changed. Need transactions? See somewhere else
+            result = self._collection.find_one_and_replace(query, new_data)
+            return result # returns old value
+
     def delete(self, id):
         result = self._collection.delete_one({'_id' : ObjectId(id)}).deleted_count
         if 0 == result:
