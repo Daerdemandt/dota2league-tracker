@@ -46,8 +46,10 @@ class MongoCRUD:
         # TODO: support validating the update, not post-update entity
         update_validation_supported = False
         if not update_validation_supported: # We'll have to update document in Python and validate the result.
+            if not isinstance(update, dict):
+                raise ValueError('Improperly formed update')
             data = self.read(id)
-            def recursive_update(data, update):
+            def recursive_update(data, update): # beware: passing immutable object on the top level would not work in-place
                 try:
                     for key, value in update.items():
                         if key in data:
@@ -59,7 +61,7 @@ class MongoCRUD:
                     return update
                 except TypeError: # update is a dict but data is not
                     return update
-            recursive_update(data, update)
+            recursive_update(data, update) # should work in-place because both are dicts
             del data['_id']
 
             try:
