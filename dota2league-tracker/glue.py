@@ -11,6 +11,9 @@ def lexic_join(expressions):
     else:
         return str(last)
 
+#TODO: decorator that translates Invalid to ValueError
+#TODO: context manager that lets exceptions seep through cathces - so that they hit top level, useful for debug mode
+
 class MongoCRUD:
     def __init__(self, db, name, validate):
         self._collection = db[name]
@@ -105,7 +108,7 @@ def expose_as_api(app, info, path):
         args = {_:request.args.get(_) for _ in request.args} # '?value=a&value=b'? No way!
         try:
             result = getter(**args)
-        except TypeError:
+        except TypeError as e:
             signature = getargspec(getter)
             known_params = signature.args[1:] # this removes 'self' - or how it is called - from the list. TODO: handle classmethods too
             mandatory_params = known_params[:-len(signature.defaults)] if signature.defaults else known_params
@@ -127,11 +130,12 @@ def expose_as_api(app, info, path):
             elif 1 < len(unsatisfied_params):
                 errors.append('Mandatory params not provided: ' + ', '.join(str(param) for param in unsatisfied_params) + '.')
 
+            status = 422
             if errors:
                 result = {'error': ' '.join(errors)}
-                status = 422
             else:
-                raise
+                result = {'error': 'Something is wrong: ' + str(e)}
+
         except KeyError as e:
             result = {'error': 'Not found: ' + str(e)}
             status = 404
