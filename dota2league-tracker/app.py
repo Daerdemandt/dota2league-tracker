@@ -20,15 +20,5 @@ def get_config():
 
 expose_as_api(app, Leagues(mongo), '/leagues')
 
-@app.route('/obj/')
-def get():
-    args = request.args
-    key = args.get('key')
-    #return str([_ for _ in args])
-    #args = dict(request.args)
-    args = {_:args.get(_) for _ in args}
-    return str(args)
-    return str(args[key])
-
 if __name__ == "__main__":
     app.run(host='0.0.0.0', **config['server'])
