@@ -12,6 +12,8 @@ def read_bool(string):
         return True
     elif string.lower() == 'false':
         return False
+    elif bool(string) == string:
+        return bool(string)
     else:
         raise ValueError('Expected boolean value, got ' + str(string))
 
