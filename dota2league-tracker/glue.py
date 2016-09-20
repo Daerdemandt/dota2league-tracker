@@ -3,6 +3,7 @@ from inspect import getargspec
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from good import Invalid
+import sys
 
 def lexic_join(expressions):
     *most, last = expressions
@@ -153,6 +154,9 @@ def expose_as_api(app, info, path):
             status = 500
         return dumps(result), status
 
+
+def p(*args):
+    print(*args, file=sys.stderr)
 
 def forever(function, delay=10):
     def loop():
