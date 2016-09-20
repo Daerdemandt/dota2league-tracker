@@ -13,7 +13,8 @@ def parse(filename):
 
     # syntax:
     config = {
-        'server' : k('server', is_valid_server_conf)
+        'server' : k('server', is_valid_server_conf),
+        'steam api key' : k('steam api key', str)
     }
 
     # semantics:
