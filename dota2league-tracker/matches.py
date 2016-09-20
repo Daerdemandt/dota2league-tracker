@@ -49,3 +49,11 @@ def process_leagues_in_background(leagues, dota_api, matches):
             process_league(league_id)
 
     forever(process_leagues, 3000)# TODO: read delay from config
+
+def process_matches_in_background(dota_api, matches):
+    p('Process matches started!')
+    def process_one():
+        match_id = matches.get_match_to_process()
+        p('"Processing" match {}'.format(match_id))
+        matches.mark_as_processed(match_id)
+    forever(process_one, 2)

@@ -31,6 +31,7 @@ import dota2api
 steam_api = dota2api.Initialise(config['steam api key'])
 
 process_leagues_in_background(leagues, steam_api, matches)
+process_matches_in_background(steam_api, matches)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', **config['server'])
