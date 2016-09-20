@@ -154,3 +154,18 @@ def expose_as_api(app, info, path):
         return dumps(result), status
 
 
+def forever(function, delay=10):
+    def loop():
+        while True:
+            try:
+                function()
+            except KeyboardInterrupt:
+                raise
+            except Exception:
+                pass
+            time.sleep(delay)
+            #break # that's for debugging purposes
+    thread = threading.Thread(target=loop)
+    thread.start()
+
+
