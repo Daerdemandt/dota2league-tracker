@@ -1,4 +1,5 @@
 from glue import p, forever
+from webhooker import t
 
 class Matches:
     def __init__(self, db):
@@ -53,5 +54,8 @@ def process_matches_in_background(dota_api, matches):
     def process_one():
         match_id = matches.get_match_to_process()
         p('"Processing" match {}'.format(match_id))
+        match = dota_api.get_match_details(match_id=match_id)
+        p(t.process(match=match))
+        #p("Results: {}".format(match))
         matches.mark_as_processed(match_id)
     forever(process_one, 2)

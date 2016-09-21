@@ -2,4 +2,4 @@ flask
 konf
 pymongo
 dota2api
-
+requests
