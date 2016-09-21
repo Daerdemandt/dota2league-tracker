@@ -30,8 +30,11 @@ matches = Matches(mongo)
 import dota2api
 steam_api = dota2api.Initialise(config['steam api key'])
 
+from webhooker import Hooks
+hooks = Hooks(config['hooks'])
+
 process_leagues_in_background(leagues, steam_api, matches)
-process_matches_in_background(steam_api, matches)
+process_matches_in_background(steam_api, matches, hooks)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', **config['server'])

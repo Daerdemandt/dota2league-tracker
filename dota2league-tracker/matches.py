@@ -1,5 +1,4 @@
 from glue import p, forever
-from webhooker import t
 
 class Matches:
     def __init__(self, db):
@@ -49,13 +48,12 @@ def process_leagues_in_background(leagues, dota_api, matches):
 
     forever(process_leagues, 3000)# TODO: read delay from config
 
-def process_matches_in_background(dota_api, matches):
+def process_matches_in_background(dota_api, matches, hooks):
     p('Process matches started!')
     def process_one():
         match_id = matches.get_match_to_process()
         p('"Processing" match {}'.format(match_id))
         match = dota_api.get_match_details(match_id=match_id)
-        p(t.process(match=match))
-        #p("Results: {}".format(match))
+        hooks.process(match=match)
         matches.mark_as_processed(match_id)
     forever(process_one, 2)

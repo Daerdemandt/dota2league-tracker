@@ -1,6 +1,13 @@
 from jinja2 import Template, Environment
 import requests
 from json import dumps
+from good import Schema, Optional
+
+template_schema = Schema({ # TODO: not just a string, but valid Jinja template!
+    'url' : str,
+    'type' : str,
+    Optional('data') : str
+})
 
 env = Environment()
 env.filters['json'] = dumps
@@ -27,7 +34,14 @@ class Trigger:
             request = requests.post(request_spec['url'], data = request_spec['data'])
         elif request_spec['type'] == 'get':
             request = requests.get(request_spec['url'])
-        return request.text
 
+class Hooks:
+    def __init__(self, hooks):
+        self._hooks = dictmap(Trigger, hooks)
 
-t = Trigger(example)
+    def process(self, **context):
+        for name, trigger in self._hooks.items():
+            try:
+                trigger.process(**context)
+            except Exception as e:# TODO: actually handle exceptions here
+                p(e)
