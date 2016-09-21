@@ -1,5 +1,3 @@
-import time
-import threading
 from glue import p, forever
 
 class Matches:
