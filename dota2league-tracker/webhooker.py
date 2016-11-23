@@ -3,6 +3,8 @@ import requests
 from json import dumps
 from good import Schema, Optional
 
+from glue import p
+
 template_schema = Schema({ # TODO: not just a string, but valid Jinja template!
     'url' : str,
     'type' : str,

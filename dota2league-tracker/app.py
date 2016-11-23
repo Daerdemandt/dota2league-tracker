@@ -1,4 +1,4 @@
-from flask import Flask, make_response
+from flask import Flask, make_response, request
 from config import parse
 from glue import expose_as_api
 from leagues import Leagues
@@ -25,6 +25,7 @@ expose_as_api(app, leagues, '/leagues')
 from matches import process_leagues_in_background, process_matches_in_background, Matches
 
 matches = Matches(mongo)
+expose_as_api(app, matches, '/matches')
 
 
 import dota2api
@@ -35,6 +36,18 @@ hooks = Hooks(config['hooks'])
 
 process_leagues_in_background(leagues, steam_api, matches)
 process_matches_in_background(steam_api, matches, hooks)
+
+
+from glue import p
+@app.route('/process_match')
+def process_match():
+    match_id = request.args.get('match_id')
+    #match_id = matches.get_match_to_process()
+    p('"Processing" match {} due to direct query'.format(match_id))
+    match = steam_api.get_match_details(match_id=match_id)
+    hooks.process(match=match)
+    matches.mark_as_processed(match_id)
+    return 'Done'
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', **config['server'])
